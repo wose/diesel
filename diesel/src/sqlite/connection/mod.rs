@@ -112,7 +112,7 @@ impl Connection for SqliteConnection {
 
 impl SqliteConnection {
     fn prepare_query<T: QueryFragment<Sqlite> + QueryId>(&self, source: &T)
-        -> QueryResult<RefMut<Statement>>
+        -> QueryResult<MaybeOwned<Statement>>
     {
         let mut stmt = try!(self.cached_prepared_statement(source));
 
@@ -128,9 +128,15 @@ impl SqliteConnection {
     }
 
     fn cached_prepared_statement<T: QueryFragment<Sqlite> + QueryId>(&self, source: &T)
-        -> QueryResult<RefMut<Statement>>
+        -> QueryResult<MaybeOwned<Statement>>
     {
         use std::collections::hash_map::Entry::{Occupied, Vacant};
+
+        if !source.is_safe_to_cache_prepared() {
+            let sql = to_sql(source)?;
+            return Statement::prepare(&self.raw_connection, &sql)
+                .map(MaybeOwned::Owned);
+        }
 
         refmut_map_result(self.statement_cache.borrow_mut(), |cache| {
             match cache.entry(cache_key(source)?) {
@@ -139,17 +145,13 @@ impl SqliteConnection {
                     let statement = {
                         let sql = try!(sql_from_cache_key(&entry.key(), source));
 
-                        Statement::prepare(&self.raw_connection, &sql)
+                        try!(Statement::prepare(&self.raw_connection, &sql))
                     };
 
-                    // if !source.is_safe_to_cache_prepared() {
-                    //     return statement;
-                    // }
-
-                    Ok(entry.insert(try!(statement)))
+                    Ok(entry.insert(statement))
                 }
             }
-        })
+        }).map(MaybeOwned::Borrowed)
     }
 }
 
@@ -197,6 +199,33 @@ fn refmut_map_result<T, U, E, F>(refmut: RefMut<T>, f: F) -> Result<RefMut<U>, E
     match error {
         Some(e) => Err(e),
         None => Ok(refmut),
+    }
+}
+
+enum MaybeOwned<'a, T: 'a> {
+    Owned(T),
+    Borrowed(RefMut<'a, T>),
+}
+
+use std::ops::{Deref, DerefMut};
+
+impl<'a, T: 'a> Deref for MaybeOwned<'a, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match *self {
+            MaybeOwned::Owned(ref x) => x,
+            MaybeOwned::Borrowed(ref x) => &*x,
+        }
+    }
+}
+
+impl<'a, T: 'a> DerefMut for MaybeOwned<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match *self {
+            MaybeOwned::Owned(ref mut  x) => x,
+            MaybeOwned::Borrowed(ref mut x) => &mut *x,
+        }
     }
 }
 
