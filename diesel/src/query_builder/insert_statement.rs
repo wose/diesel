@@ -334,7 +334,17 @@ impl<'a, T, U, Op, Ret, Conn, ST> LoadDsl<Conn>
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Insert;
+pub struct Insert {
+    _dummy: i32,
+}
+
+impl Insert {
+    fn new() -> Self {
+        Insert {
+            _dummy: 1,
+        }
+    }
+}
 
 impl<DB: Backend> QueryFragment<DB> for Insert {
     fn to_sql(&self, out: &mut DB::QueryBuilder) -> BuildQueryResult {
