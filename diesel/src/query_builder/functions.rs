@@ -109,7 +109,8 @@ pub fn delete<T: IntoUpdateTarget>(source: T) -> DeleteStatement<T::Table, T::Wh
 /// function is not exported by default. As with other commands, the resulting
 /// query can return the inserted rows if you choose.
 pub fn insert<T: ?Sized>(records: &T) -> IncompleteInsertStatement<&T, Insert> {
-    IncompleteInsertStatement::new(records, Insert)
+    let x = IncompleteInsertStatement::new(records, Insert);
+    x
 }
 
 /// Creates a bare select statement, with no from clause. Primarily used for
