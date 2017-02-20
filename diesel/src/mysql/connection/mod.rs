@@ -65,7 +65,6 @@ impl Connection for MysqlConnection {
         use types::FromSqlRow;
 
         let mut stmt = try!(self.prepare_query(&source.as_query()));
-        stmt.execute()?;
         let mut metadata = Vec::new();
         Mysql::row_metadata(&mut metadata);
         stmt.results(metadata)?.map(|mut row| {
