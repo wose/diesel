@@ -24,6 +24,7 @@ install:
   - appveyor DownloadFile https://sqlite.org/2017/sqlite-dll-win64-x64-3160200.zip -FileName sqlite3.zip
   - 7z e sqlite3.zip -y
   - set SQLITE3_LIB_DIR=%APPVEYOR_BUILD_FOLDER%
+
 build: false
 
 before_test:
@@ -36,7 +37,6 @@ before_test:
   # setup mysql databases
   - SET PATH=C:\Program Files\MySQL\MySQL Server 5.7\bin;C:\Program Files\MySQL\MySQL Server 5.7\lib;%PATH%
   - mysql -e "create database diesel_test; create database diesel_unit_test;" -uroot
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 test_script:
   - cd diesel
@@ -55,9 +55,9 @@ environment:
     MYSQL_PWD: Password12!
 
   matrix:
-    # - target: x86_64-pc-windows-msvc
-    #   backend: postgres
-    #   DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
+    - target: x86_64-pc-windows-msvc
+      backend: postgres
+      DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
     # SQLite doesn't distribute a static lib
     # - target: x86_64-pc-windows-msvc
     #   backend: sqlite
@@ -69,16 +69,16 @@ environment:
       # Neither mysql_config or pkg-config work for this on Windows
       MYSQLCLIENT_LIB_DIR: C:\Program Files\MySQL\MySQL Server 5.7\lib
       RUST_TEST_THREADS: 1
-    # - target: x86_64-pc-windows-gnu
-    #   backend: postgres
-    #   DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
-    # - target: x86_64-pc-windows-gnu
-    #   backend: sqlite
-    #   DATABASE_URL: test.db
-    # - target: x86_64-pc-windows-gnu
-    #   backend: mysql
-    #   DATABASE_URL: mysql://root:Password12!@localhost:3306/diesel_test
-    #   MYSQL_UNIT_TEST_DATABASE_URL: mysql://root:Password12!@localhost:3306/diesel_unit_test
-    #   # Neither mysql_config or pkg-config work for this on Windows
-    #   MYSQLCLIENT_LIB_DIR: C:\Program Files\MySQL\MySQL Server 5.7\lib
-    #   RUST_TEST_THREADS: 1
+    - target: x86_64-pc-windows-gnu
+      backend: postgres
+      DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
+    - target: x86_64-pc-windows-gnu
+      backend: sqlite
+      DATABASE_URL: test.db
+    - target: x86_64-pc-windows-gnu
+      backend: mysql
+      DATABASE_URL: mysql://root:Password12!@localhost:3306/diesel_test
+      MYSQL_UNIT_TEST_DATABASE_URL: mysql://root:Password12!@localhost:3306/diesel_unit_test
+      # Neither mysql_config or pkg-config work for this on Windows
+      MYSQLCLIENT_LIB_DIR: C:\Program Files\MySQL\MySQL Server 5.7\lib
+      RUST_TEST_THREADS: 1
