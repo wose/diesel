@@ -46,5 +46,5 @@ use super::nodes::Replace;
 pub fn insert_or_replace<T: ?Sized>(records: &T)
     -> IncompleteInsertStatement<&T, Or<Insert, Replace>>
 {
-    IncompleteInsertStatement::new(records, Or::new(Insert, Replace))
+    IncompleteInsertStatement::new(records, Or::new(Insert::new(), Replace))
 }

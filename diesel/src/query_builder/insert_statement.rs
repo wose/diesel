@@ -339,7 +339,7 @@ pub struct Insert {
 }
 
 impl Insert {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Insert {
             _dummy: 1,
         }
