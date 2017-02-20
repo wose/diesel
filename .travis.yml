@@ -14,19 +14,19 @@ before_script:
   - mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'travis'@'%';" -uroot
 script:
 - |
+  # if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
+  #   (cd diesel && travis-cargo test -- --no-default-features --features "unstable chrono $BACKEND")
+  # else
+  #   (cd diesel && travis-cargo test -- --no-default-features --features "chrono $BACKEND")
+  # fi &&
+  # if [[ "$BACKEND" == postgres ]]; then
+  #   (cd examples/postgres && ./test_all)
+  # fi &&
+  # (cd diesel_cli && travis-cargo test -- --no-default-features --features "$BACKEND") &&
+  # (cd diesel_infer_schema && travis-cargo test -- --no-default-features --features "$BACKEND") &&
+  # (cd diesel_codegen && travis-cargo test -- --no-default-features --features "dotenv $BACKEND") &&
   if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
-    (cd diesel && travis-cargo test -- --no-default-features --features "unstable chrono $BACKEND")
-  else
-    (cd diesel && travis-cargo test -- --no-default-features --features "chrono $BACKEND")
-  fi &&
-  if [[ "$BACKEND" == postgres ]]; then
-    (cd examples/postgres && ./test_all)
-  fi &&
-  (cd diesel_cli && travis-cargo test -- --no-default-features --features "$BACKEND") &&
-  (cd diesel_infer_schema && travis-cargo test -- --no-default-features --features "$BACKEND") &&
-  (cd diesel_codegen && travis-cargo test -- --no-default-features --features "dotenv $BACKEND") &&
-  if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
-    (cd diesel_tests && ASAN_OPTIONS=detect_odr_violation=0 RUSTFLAGS="-Z sanitizer=address" travis-cargo test -- --no-default-features --features "unstable $BACKEND" --verbose --target x86_64-unknown-linux-gnu)
+    (cd diesel_tests && RUST_TEST_THREADS=1 ASAN_OPTIONS=detect_odr_violation=0 RUSTFLAGS="-Z sanitizer=address" travis-cargo test -- --no-default-features --features "unstable $BACKEND" --verbose --target x86_64-unknown-linux-gnu)
   else
     (cd diesel_tests && travis-cargo test -- --no-default-features --features "$BACKEND")
   fi &&
