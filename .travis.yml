@@ -26,7 +26,7 @@ script:
   (cd diesel_infer_schema && travis-cargo test -- --no-default-features --features "$BACKEND") &&
   (cd diesel_codegen && travis-cargo test -- --no-default-features --features "dotenv $BACKEND") &&
   if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
-    (cd diesel_tests && travis-cargo test -- --no-default-features --features "unstable $BACKEND")
+    (cd diesel_tests && RUSTFLAGS="-Z sanitizer=address" travis-cargo test -- --no-default-features --features "unstable $BACKEND" --verbose)
   else
     (cd diesel_tests && travis-cargo test -- --no-default-features --features "$BACKEND")
   fi &&
