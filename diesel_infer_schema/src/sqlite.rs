@@ -97,7 +97,7 @@ pub fn determine_column_type(attr: &ColumnInformation) -> Result<ColumnType, Box
         vec!["diesel".into(), "types".into(), "Integer".into()]
     } else if is_text(&type_name) {
         vec!["diesel".into(), "types".into(), "Text".into()]
-    } else if type_name.contains("blob") || type_name.is_empty() {
+    } else if is_binary(&type_name) {
         vec!["diesel".into(), "types".into(), "Binary".into()]
     } else if is_float(&type_name) {
         vec!["diesel".into(), "types".into(), "Float".into()]
@@ -135,7 +135,8 @@ fn is_smallint(type_name: &str) -> bool {
 fn is_bigint(type_name: &str) -> bool {
     type_name == "int8" ||
         type_name.contains("big") &&
-        type_name.contains("int")
+        (type_name.contains("int") ||
+         type_name.contains("serial"))
 }
 
 fn is_float(type_name: &str) -> bool {
@@ -147,6 +148,12 @@ fn is_double(type_name: &str) -> bool {
     type_name.contains("double") ||
         type_name.contains("num") ||
         type_name.contains("dec")
+}
+
+fn is_binary(type_name: &str) -> bool {
+    type_name.contains("blob") ||
+        type_name.contains("bytea") ||
+        type_name.is_empty()
 }
 
 #[test]
